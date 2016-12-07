@@ -1,23 +1,46 @@
 var express = require('express');
-var app = express();
+var app = express(); //initialize Express
 var bodyParser = require("body-parser");
+var logger = require("morgan");
+var mongoose = require("mongoose");
+
+// Requiring our Note and Article models
+// var Note = require("./models/Note.js");
+var Article = require("./models/Article.js");
+
 
 //for Scraping
 var request = require('request');
 var cheerio = require('cheerio');
 
-//db config
-var mongojs = require('mongojs');
-var databaseUrl = "HW18-newsScrapeDB";
-var collections = ["scrapedNews"];
+// Mongoose mpromise deprecated - use bluebird promises
+var Promise = require("bluebird");
 
-// Hook mongojs config to db variable
-var db = mongojs(databaseUrl, collections);
+mongoose.Promise = Promise;
 
-// Log any mongojs errors to console
+// Use morgan and body parser with our app
+app.use(logger("dev"));
+app.use(bodyParser.urlencoded({
+    extended: false
+}));
+// Make public a static dir
+app.use(express.static("public"));
+
+
+// Database configuration with mongoose
+mongoose.connect("mongodb://localhost/HW18-newsScrapeDB");
+var db = mongoose.connection;
+
+// Show any mongoose errors
 db.on("error", function(error) {
-    console.log("Database Error:", error);
+    console.log("Mongoose Error: ", error);
 });
+
+// Once logged in to the db through mongoose, log a success message
+db.once("open", function() {
+    console.log("Mongoose connection successful.");
+});
+
 
 //HANDLEBARS
 // var exphbs = require('express-handlebars');
@@ -56,77 +79,68 @@ app.get("/scrape", function(req, res) {
         var $ = cheerio.load(html);
         //-----------TOP NEWS
         $('.full .headlines_fresh .writtens_top .written ').each(function(i, element) {
-            var title = $(element).children().attr("title");
-            //var para = $(this).text();
-            var blurb2 = $(element).children().text();
-            //var blurb = $(".written .headline ").text();
-            var link = $(element).children().attr("href");
-            link = "http://www.medicalnewstoday.com" + link;
 
-            console.log(title);
+            var result = {};
+
+            result.title = $(element).children().attr("title");
+            //var para = $(this).text();
+            result.blurb2 = $(element).children().text();
+            //var blurb = $(".written .headline ").text();
+            result.link = $(element).children().attr("href");
+            link = "http://www.medicalnewstoday.com" + result.link;
+
+            console.log(result);
             //console.log(para);
-            console.log(blurb2)
+            console.log(result.blurb2)
                 //console.log(blurb);
-            console.log(link);
+            console.log(result.link);
             console.log("=============================================");
 
-            // If this title element had both a title and a link
-            if (title && link) {
-                // Save the data in the scrapedData db
-                db.scrapedNews.save({
-                        title: title,
-                        blurb2: blurb2,
-                        link: link
-                    },
-                    function(error, saved) {
-                        // If there's an error during this query
-                        if (error) {
-                            // Log the error
-                            console.log(error);
-                        }
-                        // Otherwise,
-                        else {
-                            // Log the saved data
-                            console.log(saved);
-                        }
-                    });
-            }
+            var entry = new Article(result);
+
+            // Now, save that entry to the db
+            entry.save(function(err, doc) { //save is a shorthand for if you do not have underscore id, then Insert
+                // Log any errors
+                if (err) {
+                    console.log(err);
+                }
+                // Or log the doc
+                else {
+                    console.log(doc);
+                }
+            });
         });
         //-----------MORE NEWS
         $('.full .headlines_split .writtens_top .written').each(function(i, element) {
-            var title = $(element).children().attr("title");
-            var blurb2 = $(element).children().text();
-            //var blurb = $(".written .headline ").text();
-            var link = $(element).children().attr("href");
-            link = "http://www.medicalnewstoday.com" + link;
 
-            console.log(title);
+            var result = {}
+
+            result.title = $(element).children().attr("title");
+            result.blurb2 = $(element).children().text();
+            //var blurb = $(".written .headline ").text();
+            result.link = $(element).children().attr("href");
+            link = "http://www.medicalnewstoday.com" + result.link;
+
+            console.log(result);
             //console.log(para);
-            console.log(blurb2)
+            console.log(result.blurb2)
                 //console.log(blurb);
-            console.log(link);
+            console.log(result.link);
             console.log("=============================================");
-            // If this title element had both a title and a link
-            if (title && link) {
-                // Save the data in the scrapedData db
-                db.scrapedNews.save({
-                        title: title,
-                        blurb2: blurb2,
-                        link: link
-                    },
-                    function(error, saved) {
-                        // If there's an error during this query
-                        if (error) {
-                            // Log the error
-                            console.log(error);
-                        }
-                        // Otherwise,
-                        else {
-                            // Log the saved data
-                            console.log(saved);
-                        }
-                    });
-            }
+
+            var entry = new Article(result);
+
+            // Now, save that entry to the db
+            entry.save(function(err, doc) { //save is a shorthand for if you do not have underscore id, then Insert
+                // Log any errors
+                if (err) {
+                    console.log(err);
+                }
+                // Or log the doc
+                else {
+                    console.log(doc);
+                }
+            });
 
 
         });
@@ -134,7 +148,7 @@ app.get("/scrape", function(req, res) {
 
 
     // This will send a "Scrape Complete" message to the browser
-    res.send("Latest Rehab News Scraped! Booyah!");
+    res.send("Latest  News Scraped! Booyah!");
 });
 
 

@@ -41,9 +41,9 @@ request("http://www.medicalnewstoday.com/categories/rehabilitation", function(er
 
         //console.log(para);
         console.log(title);
-        console.log(link);
         console.log(blurb);
-        console.log("=============================================")
+        console.log(link);
+        console.log("=============================================");
     });
 
 });

@@ -57,20 +57,7 @@ app.get("/", function(req, res) {
     res.send("HW18- SCRAPE THAT; Do a localhost with '/scrape' then a scrape '/all' to see it all");
 });
 
-// Retrieve data from the db
-app.get("/all", function(req, res) {
-    // Find all results from the scrapedData collection in the db
-    db.scrapedNews.find({}, function(error, found) {
-        // Throw any errors to the console
-        if (error) {
-            console.log(error);
-        }
-        // If there are no errors, send the data to the browser as a json
-        else {
-            res.json(found);
-        }
-    });
-});
+
 
 // ============== ACTUAL SCRAPE + PUT IN MONGOdb ==============
 app.get("/scrape", function(req, res) {
@@ -141,17 +128,28 @@ app.get("/scrape", function(req, res) {
                     console.log(doc);
                 }
             });
-
-
         });
     });
 
 
     // This will send a "Scrape Complete" message to the browser
-    res.send("Latest  News Scraped! Booyah!");
+    res.send("Latest News Scraped! Booyah!");
 });
 
-
+// ========== To see all scraped articles from DB =============
+app.get("/articles", function(req, res) {
+    // Grab every doc in the Articles array
+    Article.find({}, function(error, doc) {
+        // Log any errors
+        if (error) {
+            console.log(error);
+        }
+        // Or send the doc to the browser as a json object
+        else {
+            res.json(doc);
+        }
+    });
+});
 
 // Listen on port 3000
 app.listen(3000, function() {

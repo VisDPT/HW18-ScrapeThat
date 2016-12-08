@@ -8,6 +8,7 @@ var mongoose = require("mongoose");
 var Note = require("./models/Note.js");
 var Article = require("./models/Article.js");
 
+
 //for Scraping
 var request = require('request');
 var cheerio = require('cheerio');
@@ -26,11 +27,11 @@ app.use(bodyParser.urlencoded({
 app.use(express.static("public"));
 
 
-// DB config w/ mongoose
+// Database configuration with mongoose
 mongoose.connect("mongodb://localhost/HW18-newsScrapeDB");
 var db = mongoose.connection;
 
-// Show errors
+// Show any mongoose errors
 db.on("error", function(error) {
     console.log("Mongoose Error: ", error);
 });
@@ -42,20 +43,24 @@ db.once("open", function() {
 
 
 //HANDLEBARS
-// var exphbs = require('express-handlebars');
-// app.engine('handlebars', exphbs({
-//     defaultLayout: 'main'
-// }));
-// app.set('view engine', 'handlebars');
+var exphbs = require('express-handlebars');
+app.engine('handlebars', exphbs({
+    defaultLayout: 'main'
+}));
+app.set('view engine', 'handlebars');
+
 
 // Routes
 // ======
 
 // Simple index route
 app.get("/", function(req, res) {
-    res.send("HW18- SCRAPE THAT; Do a localhost with '/scrape' then a scrape '/all' to see it all");
-    // res.send(index.html);
+    res.render('index', {
+    });
+
+    //    res.send("HW18- SCRAPE THAT; Do a localhost with '/scrape' then a scrape '/all' to see it all");
 });
+
 
 
 // ============== ACTUAL SCRAPE + PUT IN MONGOdb ==============
@@ -151,9 +156,8 @@ app.get("/articles", function(req, res) {
 });
 
 
+//===================
 
-
-//=======
 // Grab an article by it's ObjectId
 app.get("/articles/:id", function(req, res) {
     // Using the id passed in the id parameter, prepare a query that finds the matching one in our db...
@@ -202,12 +206,7 @@ app.post("/articles/:id", function(req, res) {
         }
     });
 });
-
-
-//====
-
-
-
+///=======
 
 // Listen on port 3000
 app.listen(3000, function() {

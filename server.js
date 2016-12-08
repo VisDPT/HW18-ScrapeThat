@@ -5,9 +5,8 @@ var logger = require("morgan");
 var mongoose = require("mongoose");
 
 // Requiring our Note and Article models
-// var Note = require("./models/Note.js");
+var Note = require("./models/Note.js");
 var Article = require("./models/Article.js");
-
 
 //for Scraping
 var request = require('request');
@@ -27,11 +26,11 @@ app.use(bodyParser.urlencoded({
 app.use(express.static("public"));
 
 
-// Database configuration with mongoose
+// DB config w/ mongoose
 mongoose.connect("mongodb://localhost/HW18-newsScrapeDB");
 var db = mongoose.connection;
 
-// Show any mongoose errors
+// Show errors
 db.on("error", function(error) {
     console.log("Mongoose Error: ", error);
 });
@@ -55,8 +54,8 @@ db.once("open", function() {
 // Simple index route
 app.get("/", function(req, res) {
     res.send("HW18- SCRAPE THAT; Do a localhost with '/scrape' then a scrape '/all' to see it all");
+    // res.send(index.html);
 });
-
 
 
 // ============== ACTUAL SCRAPE + PUT IN MONGOdb ==============
@@ -150,6 +149,65 @@ app.get("/articles", function(req, res) {
         }
     });
 });
+
+
+
+
+//=======
+// Grab an article by it's ObjectId
+app.get("/articles/:id", function(req, res) {
+    // Using the id passed in the id parameter, prepare a query that finds the matching one in our db...
+    Article.findOne({ "_id": req.params.id })
+        // ..and populate all of the notes associated with it
+        .populate("note")
+        // now, execute our query
+        .exec(function(error, doc) {
+            // Log any errors
+            if (error) {
+                console.log(error);
+            }
+            // Otherwise, send the doc to the browser as a json object
+            else {
+                res.json(doc);
+            }
+        });
+});
+
+
+// Create a new note or replace an existing note
+app.post("/articles/:id", function(req, res) {
+    // Create a new note and pass the req.body to the entry
+    var newNote = new Note(req.body);
+
+    // And save the new note the db
+    newNote.save(function(error, doc) {
+        // Log any errors
+        if (error) {
+            console.log(error);
+        }
+        // Otherwise
+        else {
+            // Use the article id to find and update it's note
+            Article.findOneAndUpdate({ "_id": req.params.id }, { "note": doc._id })
+                // Execute the above query
+                .exec(function(err, doc) {
+                    // Log any errors
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        // Or send the document to the browser
+                        res.send(doc);
+                    }
+                });
+        }
+    });
+});
+
+
+//====
+
+
+
 
 // Listen on port 3000
 app.listen(3000, function() {

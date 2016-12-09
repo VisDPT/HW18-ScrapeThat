@@ -1,14 +1,21 @@
-<h1>Articles with your Notes</h1>
 
-<h3>Save</h3>
-<div class="article">
-<ul>
-  {{#each Article}}
-  	<li>
-  	   <p>ID: {{this.blurb2}}</p>
-       <p>Event: {{this.link}}</p>
-  	</li>
-  {{/each}}
-</ul>
+
+<div id="articles">
+<h1 class="articleHead">Articles with your Notes:</h1>
+<form method="GET" action="/" class="form">
+  <ul>
+    {{#each article}} <!-- NAME OF MY COLLECTION-->
+      <li>
+        {{this.title}}
+  		    <p><span class="label">Title and Blurb:</span> {{this.blurb2}}</p>
+        		<p><span class="label">Link:</span> {{this.link}}</p>
+      </li>
+    {{/each}}
+  </ul>
+</form>
+
 </div>
+
+
+<div id="notes"></div>
 

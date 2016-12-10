@@ -30,7 +30,7 @@ h2 {}
     font-size: 40px
 }
 
-#articles {
+#article {
     background-color: lightgray;
     opacity: .8;
     border: ridge 8px white;
@@ -41,7 +41,7 @@ h2 {}
     margin-top: 5%;
 }
 
-#notes {
+#note {
     background-color: lightgray;
     opacity: .8;
     border: ridge 8px white;

@@ -9,6 +9,7 @@ var Note = require("./models/Note.js");
 var Article = require("./models/Article.js");
 
 
+
 //for Scraping
 var request = require('request');
 var cheerio = require('cheerio');
@@ -56,10 +57,6 @@ app.set('view engine', 'handlebars');
 // Routes
 // ======
 
-
-
-
-
 // ============== ACTUAL SCRAPE + PUT IN MONGOdb ==============
 app.get("/scrape", function(req, res) {
 
@@ -87,13 +84,10 @@ app.get("/scrape", function(req, res) {
             var entry = new Article(result);
 
             // Now, save that entry to the db
-            entry.save(function(err, doc) { //save is a shorthand for if you do not have underscore id, then Insert
-                // Log any errors
+            entry.save(function(err, doc) {
                 if (err) {
                     console.log(err);
-                }
-                // Or log the doc
-                else {
+                } else {
                     console.log(doc);
                 }
             });
@@ -141,41 +135,29 @@ app.get("/scrape", function(req, res) {
 });
 
 
-// Simple index route
-
-// app.get("/", function(req, res) {
-//     Article.find({}, function(err, data) {
-//         if (err) return handleError(err);
-//         console.log(data)
-//         res.render('index', { articles: data })
-//     })
-// });
-
+// Simple index routes
 app.get("/", function(req, res) {
+    console.log("hit");
     // Find all notes in the notes collection
     Article.find({}, function(error, found) {
         // Log any errors
         if (error) {
             console.log(error);
         } else {
-            res.render('index', { blurb2: found.blurb2 })
+            console.log(found);
+
+            res.render('index', { article: found })
+            
                 //res.json(found);
         }
     });
+
 });
-//res.render('index', {});
-//    db.getCollection('articles').find({})
 
-
-
-// ====Article.find({})
-//query.find({}).find(callback)
-//=====res.render('index', {})
-
-// })
 
 
 // ========== To see all scraped articles from DB =============
+// This will get the articles we scraped from the mongoDB
 app.get("/articles", function(req, res) {
     // Grab every doc in the Articles array
     Article.find({}, function(error, doc) {
@@ -190,58 +172,55 @@ app.get("/articles", function(req, res) {
     });
 });
 
-
-//===================
-
-// // Grab an article by it's ObjectId
-// app.get("/articles/:id", function(req, res) {
-//     // Using the id passed in the id parameter, prepare a query that finds the matching one in our db...
-//     Article.findOne({ "_id": req.params.id })
-//         // ..and populate all of the notes associated with it
-//         .populate("note")
-//         // now, execute our query
-//         .exec(function(error, doc) {
-//             // Log any errors
-//             if (error) {
-//                 console.log(error);
-//             }
-//             // Otherwise, send the doc to the browser as a json object
-//             else {
-//                 res.json(doc);
-//             }
-//         });
-// });
+// Grab an article by it's ObjectId
+app.get("/articles/:id", function(req, res) {
+    // Using the id passed in the id parameter, prepare a query that finds the matching one in our db...
+    Article.findOne({ "_id": req.params.id })
+        // ..and populate all of the notes associated with it
+        .populate("note")
+        // now, execute our query
+        .exec(function(error, doc) {
+            // Log any errors
+            if (error) {
+                console.log(error);
+            }
+            // Otherwise, send the doc to the browser as a json object
+            else {
+                res.json(doc);
+            }
+        });
+});
 
 
-// // Create a new note or replace an existing note
-// app.post("/articles/:id", function(req, res) {
-//     // Create a new note and pass the req.body to the entry
-//     var newNote = new Note(req.body);
+// Create a new note or replace an existing note
+app.post("/articles/:id", function(req, res) {
+    // Create a new note and pass the req.body to the entry
+    var newNote = new Note(req.body);
 
-//     // And save the new note the db
-//     newNote.save(function(error, doc) {
-//         // Log any errors
-//         if (error) {
-//             console.log(error);
-//         }
-//         // Otherwise
-//         else {
-//             // Use the article id to find and update it's note
-//             Article.findOneAndUpdate({ "_id": req.params.id }, { "note": doc._id })
-//                 // Execute the above query
-//                 .exec(function(err, doc) {
-//                     // Log any errors
-//                     if (err) {
-//                         console.log(err);
-//                     } else {
-//                         // Or send the document to the browser
-//                         res.send(doc);
-//                     }
-//                 });
-//         }
-//     });
-// });
-///=======
+    // And save the new note the db
+    newNote.save(function(error, doc) {
+        // Log any errors
+        if (error) {
+            console.log(error);
+        }
+        // Otherwise
+        else {
+            // Use the article id to find and update it's note
+            Article.findOneAndUpdate({ "_id": req.params.id }, { "note": doc._id })
+                // Execute the above query
+                .exec(function(err, doc) {
+                    // Log any errors
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        // Or send the document to the browser
+                        res.send(doc);
+                    }
+                });
+        }
+    });
+});
+//========================================
 
 // Listen on port 3000
 app.listen(3000, function() {

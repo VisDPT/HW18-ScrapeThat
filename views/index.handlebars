@@ -1,14 +1,16 @@
 
 
-<div id="articles">
+<div id="article">
 <h1 class="articleHead">Articles with your Notes:</h1>
 <form method="GET" action="/" class="form">
   <ul>
     {{#each article}} <!-- NAME OF MY COLLECTION-->
       <li>
-        {{this.title}}
+
+          		    <p><span class="label">Title:</span> {{this.title}}</p>
   		    <p><span class="label">Title and Blurb:</span> {{this.blurb2}}</p>
         		<p><span class="label">Link:</span> {{this.link}}</p>
+            <p><span class="label">Note:</span> {{this.note}}</p>
       </li>
     {{/each}}
   </ul>
@@ -17,5 +19,7 @@
 </div>
 
 
-<div id="notes"></div>
+<div id="note"></div>
+
+</div>
 
